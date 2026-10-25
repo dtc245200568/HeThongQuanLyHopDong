@@ -1,0 +1,72 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: contract_db
+    environment:
+      POSTGRES_DB: contract_db
+      POSTGRES_USER: contract_admin
+      POSTGRES_PASSWORD: MatKhauManh123!
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - backend_net
+
+  web:
+    build: .
+    container_name: contract_app
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_NAME: contract_db
+      DB_USER: contract_admin
+      DB_PASSWORD: MatKhauManh123!
+    depends_on:
+      - db
+    networks:
+      - backend_net
+      - frontend_net
+
+  nginx:
+    image: nginx:alpine
+    container_name: contract_proxy
+    ports:
+      - "80:80"
+    depends_on:
+      - web
+    networks:
+      - frontend_net
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: contract_prometheus
+    ports:
+      - "9090:9090"
+    networks:
+      - backend_net
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: contract_grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - backend_net
+
+  loki:
+    image: grafana/loki:latest
+    container_name: contract_loki
+    ports:
+      - "3100:3100"
+    networks:
+      - backend_net
+
+networks:
+  frontend_net:
+    driver: bridge
+  backend_net:
+    driver: bridge
+
+volumes:
+  pgdata:
