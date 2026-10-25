@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Hệ thống Quản lý Hợp đồng - Đề 34</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+    <h2 class="mb-4 text-primary fw-bold">HỆ THỐNG QUẢN LÝ HỢP ĐỒNG</h2>
+
+    <!-- Form tạo hợp đồng -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-primary text-white fw-bold">Tạo Hợp Đồng Mới</div>
+        <div class="card-body">
+            <form action="/contracts/create" method="POST" class="row g-3">
+                <div class="col-md-3">
+                    <label class="form-label">Mã Hợp Đồng</label>
+                    <input type="text" name="contract_code" class="form-control" placeholder="VD: HD-2026-01" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Tên Hợp Đồng</label>
+                    <input type="text" name="title" class="form-control" placeholder="Cung cấp phần mềm..." required>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">Các Bên Liên Quan (Bên A - Bên B)</label>
+                    <input type="text" name="stakeholders" class="form-control" placeholder="Công ty A & Đối tác B" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Giá trị (VNĐ)</label>
+                    <input type="number" name="contract_value" class="form-control" value="10000000" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ngày hiệu lực</label>
+                    <input type="date" name="start_date" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Ngày hết hạn</label>
+                    <input type="date" name="end_date" class="form-control" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Trạng thái</label>
+                    <select name="status" class="form-select">
+                        <option value="Dự thảo">Dự thảo</option>
+                        <option value="Đang thực hiện" selected>Đang thực hiện</option>
+                        <option value="Đã nghiệm thu">Đã nghiệm thu</option>
+                        <option value="Đã hủy">Đã hủy</option>
+                    </select>
+                </div>
+                <div class="col-12">
+                    <button type="submit" class="btn btn-success">Lưu Hợp Đồng</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Bộ lọc và Danh sách theo dõi hợp đồng -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span>Danh Sách Theo Dõi Hợp Đồng</span>
+            <form method="GET" action="/" class="d-flex gap-2">
+                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">-- Tất cả trạng thái --</option>
+                    <option value="Dự thảo" <%= statusFilter === 'Dự thảo' ? 'selected' : '' %>>Dự thảo</option>
+                    <option value="Đang thực hiện" <%= statusFilter === 'Đang thực hiện' ? 'selected' : '' %>>Đang thực hiện</option>
+                    <option value="Đã nghiệm thu" <%= statusFilter === 'Đã nghiệm thu' ? 'selected' : '' %>>Đã nghiệm thu</option>
+                    <option value="Đã hủy" <%= statusFilter === 'Đã hủy' ? 'selected' : '' %>>Đã hủy</option>
+                </select>
+            </form>
+        </div>
+        <div class="card-body p-0">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="table-secondary">
+                    <tr>
+                        <th>Mã HĐ</th>
+                        <th>Tên Hợp Đồng</th>
+                        <th>Bên Liên Quan</th>
+                        <th>Giá Trị (VNĐ)</th>
+                        <th>Thời Hạn</th>
+                        <th>Trạng Thái</th>
+                        <th>Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% contracts.forEach(c => { %>
+                    <tr>
+                        <td class="fw-bold"><%= c.contract_code %></td>
+                        <td><%= c.title %></td>
+                        <td><%= c.stakeholders %></td>
+                        <td><%= Number(c.contract_value).toLocaleString('vi-VN') %></td>
+                        <td>
+                            <%= new Date(c.start_date).toLocaleDateString('vi-VN') %> - 
+                            <%= new Date(c.end_date).toLocaleDateString('vi-VN') %>
+                        </td>
+                        <td>
+                            <form action="/contracts/status/<%= c.id %>" method="POST" class="d-flex gap-1">
+                                <select name="status" class="form-select form-select-sm" onchange="this.form.submit()">
+                                    <option value="Dự thảo" <%= c.status === 'Dự thảo' ? 'selected' : '' %>>Dự thảo</option>
+                                    <option value="Đang thực hiện" <%= c.status === 'Đang thực hiện' ? 'selected' : '' %>>Đang thực hiện</option>
+                                    <option value="Đã nghiệm thu" <%= c.status === 'Đã nghiệm thu' ? 'selected' : '' %>>Đã nghiệm thu</option>
+                                    <option value="Đã hủy" <%= c.status === 'Đã hủy' ? 'selected' : '' %>>Đã hủy</option>
+                                </select>
+                            </form>
+                        </td>
+                        <td>
+                            <form action="/contracts/delete/<%= c.id %>" method="POST" onsubmit="return confirm('Xóa hợp đồng này?')">
+                                <button class="btn btn-sm btn-danger">Xóa</button>
+                            </form>
+                        </td>
+                    </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
